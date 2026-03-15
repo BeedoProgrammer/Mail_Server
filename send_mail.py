@@ -4,6 +4,7 @@ import smtplib
 import ssl
 from dotenv import load_dotenv
 import os
+from email.utils import formatdate
 
 def send_email_secure(subject, sender, password, recipients, cc, body, smtp_server, smtp_port):
     try:
@@ -16,10 +17,12 @@ def send_email_secure(subject, sender, password, recipients, cc, body, smtp_serv
         msg['From'] = sender
         msg['To'] = ', '.join(recipients)
         msg['Cc'] = ', '.join(cc)
+        msg['Date'] = formatdate(localtime=True)
         msg.attach(MIMEText(body, 'plain'))
 
         # Send email using secure connection
-        with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls(context=context)
             server.login(sender, password)
             server.sendmail(sender, recipients + cc, msg.as_string())
         print("Secure email sent successfully!")
@@ -41,8 +44,9 @@ password = os.getenv("Email_Password")
 
 recipients = ["test1@sharebot.net", "test2@sharebot.net"]
 cc = ["limeteresina@sharebot.net"]
-body = "This email is sent using a secure connection."
-smtp_server = "smtp.gmail.com"
-smtp_port = 465
+body = "This should be working now"
+#smtp_server = "smtp.gmail.com"
+smtp_server =  "smtp.ethereal.email"
+smtp_port = 587
 
 send_email_secure(subject, sender, password, recipients, cc, body, smtp_server, smtp_port)
